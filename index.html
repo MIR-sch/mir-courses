@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>МИР — Курсы ОГЭ</title>
+<meta name="theme-color" content="#0E3F42">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ЭКРАН ВХОДА -->
+  <section id="screen-auth" class="screen">
+    <div class="auth-card">
+      <img class="auth-logo" src="logo.png" alt="МИР">
+      <h1>Учебный центр «МИР»</h1>
+      <p class="muted">Подготовка к ОГЭ: математика и информатика</p>
+      <div class="role-row">
+        <button class="role-btn" data-role="student">Ученик</button>
+        <button class="role-btn" data-role="parent">Родитель</button>
+        <button class="role-btn" data-role="teacher">Учитель</button>
+      </div>
+
+      <div id="auth-teacher" class="auth-pane hidden">
+        <p>Войдите через Яндекс — приложение получит доступ к папке на Яндекс Диске:</p>
+        <button class="btn primary" id="btn-yandex-login">Войти через Яндекс</button>
+        <div class="divider">или</div>
+        <button class="btn ghost" id="btn-demo">Демо-режим (посмотреть интерфейс)</button>
+      </div>
+
+      <div id="auth-student" class="auth-pane hidden">
+        <p>Введите код ученика и ссылку-приглашение от учителя:</p>
+        <input id="in-school-link" placeholder="Ссылка-приглашение или код школы">
+        <input id="in-access-code" placeholder="Код ученика, например MK-7F3K">
+        <button class="btn primary" id="btn-student-enter">Войти в кабинет</button>
+        <p class="muted small">Код выдаёт учитель. Он не даёт доступ к чужим данным — только к вашим оценкам и материалам.</p>
+      </div>
+
+      <div id="auth-parent" class="auth-pane hidden">
+        <p>Родитель входит по коду ребёнка — видит оценки, расписание, посещаемость и чеки об оплате:</p>
+        <input id="in-school-link-p" placeholder="Ссылка-приглашение или код школы">
+        <input id="in-access-code-p" placeholder="Код ученика">
+        <button class="btn primary" id="btn-parent-enter">Войти в кабинет</button>
+        <button class="btn ghost" id="btn-push-enable">Разрешить уведомления об оценках</button>
+      </div>
+      <p id="auth-error" class="error"></p>
+    </div>
+  </section>
+
+  <!-- КАБИНЕТ -->
+  <section id="screen-app" class="screen hidden">
+    <header class="topbar">
+      <img id="hdr-logo" src="logo.png" alt="">
+      <div class="hdr-text">
+        <b id="hdr-org">Учебный центр «МИР»</b>
+        <span id="hdr-sub" class="muted small"></span>
+      </div>
+      <button class="icon-btn" id="btn-logout" title="Выйти">⎋</button>
+    </header>
+
+    <nav class="tabs" id="tabs"></nav>
+    <main id="panel"></main>
+    <div id="toast" class="toast hidden"></div>
+  </section>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
