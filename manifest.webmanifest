@@ -1,12 +1,11 @@
 {
   "name": "МИР — Курсы ОГЭ",
-  "short_name": "МИР ОГЭ",
-  "description": "Онлайн-курсы подготовки к ОГЭ: математика и информатика",
-  "start_url": "./index.html",
+  "short_name": "МИР",
+  "lang": "ru",
+  "start_url": ".",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#FFFFFF",
-  "theme_color": "#0E3F42",
+  "background_color": "#f4f6f6",
+  "theme_color": "#0d4d47",
   "icons": [
     {
       "src": "icons/icon-192.png",

@@ -2,72 +2,614 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>МИР — Курсы ОГЭ</title>
-<meta name="theme-color" content="#0E3F42">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#0d4d47">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="stylesheet" href="css/styles.css">
+<style>
+:root{--green:#0d4d47;--teal:#1e9fa4;--amber:#f5b73d;--bg:#f4f6f6;--card:#fff;--line:#e3e8e8;--txt:#16302d;--mut:#6b7f7c;--red:#d64545;--ok:#2e9e63}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);padding-bottom:80px}
+header{background:var(--green);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header img{width:38px;height:38px;border-radius:8px;background:#fff}
+header h1{font-size:17px;flex:1}
+header .out{background:rgba(255,255,255,.15);border:0;color:#fff;padding:8px 10px;border-radius:8px;font-size:13px;cursor:pointer}
+nav{display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:62px;z-index:4}
+nav button{flex:0 0 auto;padding:11px 14px;border:0;background:none;font-size:13.5px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.act{color:var(--green);border-color:var(--teal);font-weight:600}
+main{max-width:820px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h3{font-size:15.5px;margin-bottom:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:11px 16px;font-size:14px;cursor:pointer}
+.btn.sec{background:#eef2f2;color:var(--txt)}
+.btn.warn{background:var(--red)}
+.btn:disabled{opacity:.5}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff;font-family:inherit}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+.mut{color:var(--mut);font-size:13px}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;background:#eef2f2;margin:2px 4px 2px 0}
+.badge.g{background:#e2f3ea;color:var(--ok)}.badge.r{background:#fdeaea;color:var(--red)}.badge.a{background:#fdf3dd;color:#9a6b00}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+video{width:100%;border-radius:12px;background:#000}
+.empty{text-align:center;color:var(--mut);padding:26px 10px}
+.logo-lg{max-width:120px;max-height:120px;border-radius:14px}
+.hero{text-align:center;padding:34px 18px}
+.hero img{width:110px;height:110px;border-radius:22px}
+.hero h1{font-size:24px;margin:12px 0 4px}
+.hero p{color:var(--mut);margin-bottom:22px}
+.btn.primary{width:100%;max-width:340px}
+.tabs2{display:flex;gap:6px;margin-bottom:10px}
+.tabs2 button{padding:8px 12px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer}
+.tabs2 button.act{background:var(--green);color:#fff;border-color:var(--green)}
+.qz{margin:10px 0;padding:12px;border:1px solid var(--line);border-radius:10px}
+.qz b{display:block;margin-bottom:6px}
+.banner{position:fixed;left:12px;right:12px;bottom:76px;background:var(--green);color:#fff;padding:13px 16px;border-radius:12px;z-index:9;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:24px;font-size:14px;z-index:10}
+@media(min-width:640px){main{padding:20px}}
+</style>
 </head>
 <body>
-<div id="app">
+<header id="hd" style="display:none"><img id="hlogo" src="logo.png" alt=""><h1 id="htitle">МИР — Курсы ОГЭ</h1><button class="out" onclick="logout()">Выйти</button></header>
+<nav id="nav" style="display:none"></nav>
+<main id="main"></main>
+<div id="banner"></div>
+<script>
+'use strict';
+/* ================= КОНФИГ ================= */
+const CLIENT_ID='f120aaf32f904b9895a3345aa4f7cdb2t';
+const FOLDER='/Приложения/МИР-Курсы';
+const P_CONTENT=FOLDER+'/content.json', P_STUDENTS=FOLDER+'/students.json', P_PUBLISH=FOLDER+'/publish.json';
 
-  <!-- ЭКРАН ВХОДА -->
-  <section id="screen-auth" class="screen">
-    <div class="auth-card">
-      <img class="auth-logo" src="logo.png" alt="МИР">
-      <h1>Учебный центр «МИР»</h1>
-      <p class="muted">Подготовка к ОГЭ: математика и информатика</p>
-      <div class="role-row">
-        <button class="role-btn" data-role="student">Ученик</button>
-        <button class="role-btn" data-role="parent">Родитель</button>
-        <button class="role-btn" data-role="teacher">Учитель</button>
-      </div>
+/* ================= СОСТОЯНИЕ ================= */
+let token=null, demo=false, role=null;
+let C=null, ST=null;
+let tab='courses', sTab='lessons', editCourseId=null, pub={};
+let meCache=null;
 
-      <div id="auth-teacher" class="auth-pane hidden">
-        <p>Войдите через Яндекс — приложение получит доступ к папке на Яндекс Диске:</p>
-        <button class="btn primary" id="btn-yandex-login">Войти через Яндекс</button>
-        <div class="divider">или</div>
-        <button class="btn ghost" id="btn-demo">Демо-режим (посмотреть интерфейс)</button>
-      </div>
+function uid(){return Math.random().toString(36).slice(2,9)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},2600)}
+function today(){return new Date().toISOString().slice(0,10)}
 
-      <div id="auth-student" class="auth-pane hidden">
-        <p>Введите код ученика и ссылку-приглашение от учителя:</p>
-        <input id="in-school-link" placeholder="Ссылка-приглашение или код школы">
-        <input id="in-access-code" placeholder="Код ученика, например MK-7F3K">
-        <button class="btn primary" id="btn-student-enter">Войти в кабинет</button>
-        <p class="muted small">Код выдаёт учитель. Он не даёт доступ к чужим данным — только к вашим оценкам и материалам.</p>
-      </div>
+/* ================= ЗАПУСК ================= */
+window.addEventListener('DOMContentLoaded',init);
+async function init(){
+  const h=new URLSearchParams(location.hash.slice(1));
+  const q=new URLSearchParams(location.search);
+  if(h.get('access_token')){token=h.get('access_token');history.replaceState(null,'',location.pathname+location.search);}
+  const pubUrl=q.get('pub');
+  const savedRole=localStorage.getItem('mir_role');
+  if(token){role='teacher';localStorage.setItem('mir_role','teacher');await loadTeacher();return;}
+  if(pubUrl){role='student';await loadStudent(decodeURIComponent(pubUrl));return;}
+  if(savedRole==='student'&&localStorage.getItem('mir_pub')){role='student';await loadStudent(localStorage.getItem('mir_pub'));return;}
+  roleSelect();
+}
 
-      <div id="auth-parent" class="auth-pane hidden">
-        <p>Родитель входит по коду ребёнка — видит оценки, расписание, посещаемость и чеки об оплате:</p>
-        <input id="in-school-link-p" placeholder="Ссылка-приглашение или код школы">
-        <input id="in-access-code-p" placeholder="Код ученика">
-        <button class="btn primary" id="btn-parent-enter">Войти в кабинет</button>
-        <button class="btn ghost" id="btn-push-enable">Разрешить уведомления об оценках</button>
-      </div>
-      <p id="auth-error" class="error"></p>
-    </div>
-  </section>
+function roleSelect(){
+  const defLogo=(C&&C.settings&&C.settings.logo)?C.settings.logo:'logo.png';
+  document.getElementById('main').innerHTML=
+  '<div class="hero">'+
+    '<img src="'+esc(defLogo)+'" alt="МИР">'+
+    '<h1>'+esc(C&&C.settings&&C.settings.centerName||'МИР')+'</h1>'+
+    '<p>Подготовка к ОГЭ · математика · информатика</p>'+
+    '<div class="row" style="justify-content:center;gap:10px">'+
+      '<button class="btn primary" onclick="loginYandex()">Войти как учитель через Яндекс</button>'+
+      '<button class="btn sec primary" onclick="codePrompt()">Вход по коду (ученик / родитель)</button>'+
+      '<button class="btn sec primary" onclick="startDemo()">Демо-режим без входа</button>'+
+    '</div>'+
+    '<p class="mut" style="margin-top:18px">Учитель входит под аккаунтом учебного центра.<br>Ученики и родители — по коду из приглашения.</p>'+
+  '</div>';
+}
+function loginYandex(){
+  const redirect=location.origin+location.pathname;
+  location.href='https://oauth.yandex.ru/authorize?response_type=token&client_id='+CLIENT_ID+'&redirect_uri='+encodeURIComponent(redirect);
+}
+function codePrompt(){
+  const pub=localStorage.getItem('mir_pub')||'';
+  const v=prompt('Введите ваш код ученика (вида MK-XXXX):');
+  if(!v)return;
+  if(!pub){toast('Откройте приложение по ссылке-приглашению от учителя');return;}
+  enterStudent(v.trim().toUpperCase());
+}
+function logout(){localStorage.removeItem('mir_role');location.reload();}
+function startDemo(){demo=true;role='teacher';localStorage.setItem('mir_role','teacher');loadDemoData();}
 
-  <!-- КАБИНЕТ -->
-  <section id="screen-app" class="screen hidden">
-    <header class="topbar">
-      <img id="hdr-logo" src="logo.png" alt="">
-      <div class="hdr-text">
-        <b id="hdr-org">Учебный центр «МИР»</b>
-        <span id="hdr-sub" class="muted small"></span>
-      </div>
-      <button class="icon-btn" id="btn-logout" title="Выйти">⎋</button>
-    </header>
+/* ================= ДАННЫЕ УЧИТЕЛЯ (Яндекс Диск) ================= */
+async function api(path,opts,base){
+  opts=opts||{};base=base||'https://cloud-api.yandex.net/v1/disk';
+  const r=await fetch(base+path,Object.assign({},opts,{headers:Object.assign({Authorization:'OAuth '+token,'Content-Type':'application/json'},opts.headers||{})}));
+  if(!r.ok) throw new Error('Яндекс Диск: HTTP '+r.status);
+  return r.status===204?null:await r.json();
+}
+async function ensureFolder(p){try{await api('/resources?path='+encodeURIComponent(p),{method:'PUT'})}catch(e){}}
+async function uploadFile(path,blob){
+  const j=await api('/resources/upload?overwrite=true&path='+encodeURIComponent(path));
+  const r=await fetch(j.href,{method:'PUT',body:blob});
+  if(!r.ok) throw new Error('Загрузка файла не удалась');
+}
+async function readJson(path){
+  try{const j=await api('/resources/download?path='+encodeURIComponent(path));const r=await fetch(j.href);if(!r.ok)return null;return await r.json()}catch(e){return null}
+}
+async function writeJson(path,obj){await uploadFile(path,new Blob([JSON.stringify(obj)],{type:'application/json'}))}
+async function publishPath(path){
+  await api('/resources/publish?path='+encodeURIComponent(path),{method:'PUT'});
+  const j=await api('/resources?path='+encodeURIComponent(path)+'&fields=public_url');
+  return j.public_url;
+}
+async function loadTeacher(){
+  showChrome(true);
+  document.getElementById('main').innerHTML='<div class="empty">Загружаю данные с Яндекс Диска…</div>';
+  try{
+    await ensureFolder(FOLDER);
+    C=await readJson(P_CONTENT)||defaultContent();
+    ST=await readJson(P_STUDENTS)||[];
+    pub=await readJson(P_PUBLISH)||{};
+    showChrome(true);setTabs();renderTab();
+  }catch(e){
+    document.getElementById('main').innerHTML='<div class="card"><h3>Не удалось загрузить данные</h3><p class="mut">'+esc(e.message)+'</p><p class="mut">Проверьте: в Яндекс OAuth включены «Веб-сервисы», право «Яндекс Диск», Redirect URI = <b>'+esc(location.origin+location.pathname)+'</b> (со слэшем на конце).</p></div>';
+  }
+}
+function defaultContent(){return {settings:{centerName:'МИР',logo:'',formLink:'',functionUrl:'',vapidPublic:''},courses:[
+  {id:uid(),name:'ОГЭ Математика',desc:'Подготовка к ОГЭ по математике'},
+  {id:uid(),name:'ОГЭ Информатика',desc:'Подготовка к ОГЭ по информатике'}],lessons:[],tests:[],tasks:[],schedule:[]}}
+function loadDemoData(){
+  C=defaultContent();
+  C.lessons=[{id:uid(),courseId:C.courses[0].id,title:'Уравнения: разбор №1',desc:'Линейные и квадратные уравнения',mediaPath:'',mediaName:'',mediaType:''},
+             {id:uid(),courseId:C.courses[1].id,title:'Циклы в Python',desc:'for и while на примерах ОГЭ',mediaPath:'',mediaName:'',mediaType:''}];
+  C.tests=[{id:uid(),courseId:C.courses[0].id,title:'Пробный тест №1',questions:[{q:'2+2×2 = ?',opts:['6','8','4','2'],c:0},{q:'Чему равен sin 30°?',opts:['0,5','1','0','2'],c:0}]}];
+  C.tasks=[{id:uid(),courseId:C.courses[0].id,title:'Домашняя работа №1',desc:'Решите задачи 1–5 и загрузите фото решения через форму',filePath:'',fileName:''}];
+  C.schedule=[{courseId:C.courses[0].id,date:today(),time:'18:00',topic:'Квадратные уравнения'}];
+  ST=[{code:'MK-7F3K',name:'Иван Петров',courseIds:[C.courses[0].id,C.courses[1].id],
+    grades:[{courseId:C.courses[0].id,label:'Тест №1',value:'5',date:today()}],
+    attendance:[{date:today(),status:'был'}],
+    payments:[{date:today(),amount:'4000',note:'Оплата месяца',checkPath:'',checkName:''}]}];
+  showChrome(true);setTabs();renderTab();
+}
+async function saveAll(){
+  if(demo){toast('Демо-режим: на Диск не сохраняется');return;}
+  try{await writeJson(P_CONTENT,C);await writeJson(P_STUDENTS,ST);toast('Сохранено на Яндекс Диск');}
+  catch(e){toast('Ошибка сохранения: '+e.message)}
+}
 
-    <nav class="tabs" id="tabs"></nav>
-    <main id="panel"></main>
-    <div id="toast" class="toast hidden"></div>
-  </section>
-</div>
-<script src="js/app.js"></script>
+/* ================= ХРОМ И НАВИГАЦИЯ ================= */
+function showChrome(v){
+  document.getElementById('hd').style.display=v?'flex':'none';
+  document.getElementById('nav').style.display=v?'flex':'none';
+  const s=(C&&C.settings)||{};
+  document.getElementById('htitle').textContent=(s.centerName||'МИР')+' — Курсы';
+  if(s.logo) document.getElementById('hlogo').src=s.logo;
+}
+function setTabs(){
+  const tabs=role==='teacher'
+    ?[['courses','Курсы'],['lessons','Уроки'],['tests','Тесты'],['tasks','Задания'],['students','Ученики'],['journal','Журнал'],['publish','Публикация'],['settings','Настройки']]
+    :[['lessons','Уроки'],['tests','Тесты'],['tasks','Задания'],['progress','Оценки'],['schedule','Расписание'],['payments','Оплаты']];
+  document.getElementById('nav').innerHTML=tabs.map(function(t){return '<button class="'+(t[0]===tab?'act':'')+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>'}).join('');
+}
+function go(t){tab=t;if(role!=='teacher')sTab=t;renderTab();window.scrollTo(0,0)}
+function renderTab(){
+  const m=document.getElementById('main');
+  if(role==='teacher') m.innerHTML=({courses:tCourses,lessons:tLessons,tests:tTests,tasks:tTasks,students:tStudents,journal:tJournal,publish:tPublish,settings:tSettings}[tab])();
+  else m.innerHTML=({lessons:sLessons,tests:sTests,tasks:sTasks,progress:sProgress,schedule:sSchedule,payments:sPayments}[sTab||'lessons'])();
+  if(role==='student'){maybeNotifBanner();setTimeout(hydrateVideos,60);}
+}
+function myCourses(){const me=meStudent();return me?C.courses.filter(function(c){return me.courseIds.includes(c.id)}):C.courses}
+function meStudent(){
+  if(meCache)return meCache;
+  const code=localStorage.getItem('mir_code');
+  const rec=C.students&&C.students[code];
+  if(rec)meCache=Object.assign({code:code},rec);
+  return meCache;
+}
+
+/* ================= УЧИТЕЛЬ: КУРСЫ ================= */
+function tCourses(){
+  return '<div class="card"><h3>Курсы</h3>'+
+    '<div class="row"><input id="ncName" placeholder="Название курса, напр. ОГЭ Физика" style="flex:1;min-width:180px"><button class="btn" onclick="addCourse()">Добавить курс</button></div></div>'+
+  C.courses.map(function(c){
+    const nl=C.lessons.filter(function(l){return l.courseId===c.id}).length,
+          nt=C.tests.filter(function(t){return t.courseId===c.id}).length,
+          nk=C.tasks.filter(function(t){return t.courseId===c.id}).length;
+    return '<div class="card"><div class="row" style="justify-content:space-between"><h3>'+esc(c.name)+'</h3>'+
+      '<div class="row"><button class="btn sec" onclick="toggleCourseEdit(\''+c.id+'\')">Править</button><button class="btn warn" onclick="delCourse(\''+c.id+'\')">Удалить</button></div></div>'+
+      '<p class="mut">'+esc(c.desc||'')+'</p>'+
+      '<div><span class="badge">'+nl+' уроков</span><span class="badge">'+nt+' тестов</span><span class="badge">'+nk+' заданий</span></div>'+
+      (editCourseId===c.id?'<label>Название</label><input id="ce-n" value="'+esc(c.name)+'"><label>Описание</label><input id="ce-d" value="'+esc(c.desc||'')+'"><label>Логотип курса (ссылка на картинку)</label><input id="ce-l" value="'+esc(c.logo||'')+'" placeholder="https://..."><div class="row" style="margin-top:8px"><button class="btn" onclick="saveCourse(\''+c.id+'\')">Сохранить</button></div>':'')+
+    '</div>';
+  }).join('');
+}
+function toggleCourseEdit(id){editCourseId=(editCourseId===id)?null:id;renderTab()}
+function addCourse(){const n=document.getElementById('ncName').value.trim();if(!n){toast('Введите название');return;}C.courses.push({id:uid(),name:n,desc:'',logo:''});saveAll();renderTab()}
+function saveCourse(id){const c=C.courses.find(function(x){return x.id===id});c.name=document.getElementById('ce-n').value.trim();c.desc=document.getElementById('ce-d').value.trim();c.logo=document.getElementById('ce-l').value.trim();editCourseId=null;saveAll();renderTab()}
+function delCourse(id){if(!confirm('Удалить курс вместе с его уроками, тестами и заданиями?'))return;
+  C.courses=C.courses.filter(function(c){return c.id!==id});
+  C.lessons=C.lessons.filter(function(l){return l.courseId!==id});
+  C.tests=C.tests.filter(function(t){return t.courseId!==id});
+  C.tasks=C.tasks.filter(function(t){return t.courseId!==id});
+  saveAll();renderTab()}
+
+/* ================= УЧИТЕЛЬ: УРОКИ ================= */
+function tLessons(){
+  return '<div class="card"><h3>Загрузить видеоурок или материал</h3>'+
+    '<label>Курс</label><select id="nl-c">'+C.courses.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join('')+'</select>'+
+    '<label>Название урока</label><input id="nl-t" placeholder="Урок 1. Тема">'+
+    '<label>Описание</label><input id="nl-d">'+
+    '<label>Файл (видео mp4, pdf, изображения)</label><input type="file" id="nl-f" accept="video/*,application/pdf,image/*">'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="addLesson()">Загрузить и опубликовать</button></div>'+
+    '<p class="mut" style="margin-top:8px">Файлы хранятся на Яндекс Диске в папке '+esc(FOLDER)+'/media. Ученики смотрят их только внутри приложения.</p></div>'+
+  (C.lessons.map(function(l){
+    const c=C.courses.find(function(x){return x.id===l.courseId});
+    return '<div class="card"><div class="row" style="justify-content:space-between"><h3>'+esc(l.title)+'</h3><button class="btn warn" onclick="delLesson(\''+l.id+'\')">×</button></div><span class="badge a">'+esc(c?c.name:'')+'</span><p class="mut" style="margin:6px 0">'+esc(l.desc||'')+'</p>'+(l.mediaPath?'<p class="mut">Файл: '+esc(l.mediaName||l.mediaPath)+'</p>':'')+'</div>';
+  }).join('')||'<div class="card empty">Уроков пока нет</div>');
+}
+async function addLesson(){
+  const f=document.getElementById('nl-f').files[0];
+  const L={id:uid(),courseId:document.getElementById('nl-c').value,title:document.getElementById('nl-t').value.trim(),desc:document.getElementById('nl-d').value.trim(),mediaPath:'',mediaName:'',mediaType:f?f.type:''};
+  if(!L.title){toast('Введите название урока');return;}
+  try{
+    if(f){toast('Загружаю на Диск…');await ensureFolder(FOLDER+'/media');L.mediaName=f.name;L.mediaPath=FOLDER+'/media/'+Date.now()+'-'+f.name.replace(/[^\w.\-а-яА-ЯёЁ ]+/g,'_');await uploadFile(L.mediaPath,f);}
+    C.lessons.push(L);await saveAll();renderTab();toast('Урок добавлен');
+  }catch(e){toast('Ошибка: '+e.message)}
+}
+function delLesson(id){if(!confirm('Удалить урок?'))return;C.lessons=C.lessons.filter(function(l){return l.id!==id});saveAll();renderTab()}
+
+/* ================= УЧИТЕЛЬ: ТЕСТЫ ================= */
+function tTests(){
+  return '<div class="card"><h3>Новый тест</h3>'+
+    '<label>Курс</label><select id="nt-c">'+C.courses.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join('')+'</select>'+
+    '<label>Название теста</label><input id="nt-t">'+
+    '<label>Вопросы — по строке на вопрос: вопрос; вариант1; вариант2; вариант3; номер правильного (с 1)</label>'+
+    '<textarea id="nt-q" rows="6" placeholder="2+2×2 = ?;6;8;4;1&#10;Столица России?;Москва;Питер;Казань;1"></textarea>'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="addTest()">Создать тест</button></div></div>'+
+  (C.tests.map(function(t){
+    const c=C.courses.find(function(x){return x.id===t.courseId});
+    return '<div class="card"><div class="row" style="justify-content:space-between"><h3>'+esc(t.title)+'</h3><button class="btn warn" onclick="delTest(\''+t.id+'\')">×</button></div><span class="badge a">'+esc(c?c.name:'')+'</span><span class="badge">'+t.questions.length+' вопросов</span></div>';
+  }).join('')||'<div class="card empty">Тестов пока нет</div>');
+}
+function addTest(){
+  const raw=document.getElementById('nt-q').value.split('\n').map(function(s){return s.trim()}).filter(Boolean);
+  const qs=raw.map(function(line){
+    const p=line.split(';').map(function(s){return s.trim()});
+    if(p.length<3)return null;
+    const c=parseInt(p[p.length-1],10);
+    return {q:p[0],opts:p.slice(1,-1),c:(c>=1&&c<=p.length-2)?c-1:0};
+  }).filter(Boolean);
+  if(!qs.length){toast('Не удалось разобрать вопросы — проверьте формат');return;}
+  C.tests.push({id:uid(),courseId:document.getElementById('nt-c').value,title:document.getElementById('nt-t').value.trim()||'Тест',questions:qs});
+  saveAll();renderTab();
+}
+function delTest(id){if(!confirm('Удалить тест?'))return;C.tests=C.tests.filter(function(t){return t.id!==id});saveAll();renderTab()}
+
+/* ================= УЧИТЕЛЬ: ЗАДАНИЯ ================= */
+function tTasks(){
+  return '<div class="card"><h3>Новое задание</h3>'+
+    '<label>Курс</label><select id="nk-c">'+C.courses.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join('')+'</select>'+
+    '<label>Название</label><input id="nk-t"><label>Описание</label><textarea id="nk-d" rows="3"></textarea>'+
+    '<label>Файл задания (необязательно)</label><input type="file" id="nk-f">'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="addTask()">Добавить</button></div></div>'+
+  (C.tasks.map(function(t){
+    const c=C.courses.find(function(x){return x.id===t.courseId});
+    return '<div class="card"><div class="row" style="justify-content:space-between"><h3>'+esc(t.title)+'</h3><button class="btn warn" onclick="delTask(\''+t.id+'\')">×</button></div><span class="badge a">'+esc(c?c.name:'')+'</span><p class="mut" style="margin-top:6px">'+esc(t.desc||'')+'</p>'+(t.filePath?'<p class="mut">Файл: '+esc(t.fileName||'')+'</p>':'')+'</div>';
+  }).join('')||'<div class="card empty">Заданий пока нет</div>');
+}
+async function addTask(){
+  const f=document.getElementById('nk-f').files[0];
+  const T2={id:uid(),courseId:document.getElementById('nk-c').value,title:document.getElementById('nk-t').value.trim(),desc:document.getElementById('nk-d').value.trim(),filePath:'',fileName:''};
+  if(!T2.title){toast('Введите название');return;}
+  if(f){toast('Загружаю на Диск…');await ensureFolder(FOLDER+'/media');T2.fileName=f.name;T2.filePath=FOLDER+'/media/'+Date.now()+'-'+f.name.replace(/[^\w.\-а-яА-ЯёЁ ]+/g,'_');await uploadFile(T2.filePath,f);}
+  C.tasks.push(T2);await saveAll();renderTab();toast('Задание добавлено');
+}
+function delTask(id){if(!confirm('Удалить задание?'))return;C.tasks=C.tasks.filter(function(t){return t.id!==id});saveAll();renderTab()}
+
+/* ================= УЧИТЕЛЬ: УЧЕНИКИ ================= */
+function tStudents(){
+  return '<div class="card"><h3>Добавить ученика</h3>'+
+    '<div class="row"><input id="ns-name" placeholder="Имя ученика" style="flex:1;min-width:150px"><select id="ns-c" multiple size="3" style="min-width:170px;flex:1">'+C.courses.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join('')+'</select><button class="btn" onclick="addStudent()">Добавить</button></div>'+
+    '<p class="mut" style="margin-top:8px">Выберите курсы с Ctrl (на телефоне — долгий тап). Код ученика — его «логин».</p></div>'+
+  (ST.map(function(s){
+    return '<div class="card"><div class="row" style="justify-content:space-between"><h3>'+esc(s.name)+' <span class="badge g">'+esc(s.code)+'</span></h3><button class="btn warn" onclick="delStudent(\''+s.code+'\')">×</button></div><div>'+s.courseIds.map(function(id){return '<span class="badge">'+esc((C.courses.find(function(c){return c.id===id})||{}).name||'')+'</span>'}).join('')+'</div></div>';
+  }).join('')||'<div class="card empty">Учеников пока нет</div>');
+}
+function addStudent(){
+  const n=document.getElementById('ns-name').value.trim();if(!n){toast('Введите имя');return;}
+  const sel=[].slice.call(document.getElementById('ns-c').selectedOptions).map(function(o){return o.value});
+  let code;do{code='MK-'+Math.random().toString(36).slice(2,6).toUpperCase().replace(/[^A-Z0-9]/g,'X')}while(ST.some(function(s){return s.code===code}));
+  ST.push({code:code,name:n,courseIds:sel,grades:[],attendance:[],payments:[]});
+  saveAll();renderTab();toast('Код ученика: '+code+' — запишите его!');
+}
+function delStudent(code){if(!confirm('Удалить ученика?'))return;ST=ST.filter(function(s){return s.code!==code});saveAll();renderTab()}
+
+/* ================= УЧИТЕЛЬ: ЖУРНАЛ ================= */
+let jTab='grades';
+function tJournal(){
+  return '<div class="tabs2">'+
+    '<button class="'+(jTab==='grades'?'act':'')+'" onclick="jTab=\'grades\';renderTab()">Оценки</button>'+
+    '<button class="'+(jTab==='att'?'act':'')+'" onclick="jTab=\'att\';renderTab()">Посещаемость</button>'+
+    '<button class="'+(jTab==='pay'?'act':'')+'" onclick="jTab=\'pay\';renderTab()">Оплаты</button>'+
+  '</div>'+(jTab==='grades'?jGrades():jTab==='att'?jAtt():jPay());
+}
+function jGrades(){
+  return '<div class="card"><h3>Поставить оценку</h3>'+
+    '<label>Ученик</label><select id="g-s">'+ST.map(function(s){return '<option value="'+s.code+'">'+esc(s.name)+' ('+s.code+')</option>'}).join('')+'</select>'+
+    '<label>Курс</label><select id="g-c">'+C.courses.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join('')+'</select>'+
+    '<label>За что</label><input id="g-l" placeholder="Тест №1 / контрольная">'+
+    '<label>Оценка</label><select id="g-v"><option>5</option><option>4</option><option>3</option><option>2</option><option>Зачёт</option></select>'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="addGrade()">Сохранить и уведомить</button></div></div>'+
+  ST.map(function(s){
+    return '<div class="card"><h3>'+esc(s.name)+' <span class="badge g">'+s.code+'</span></h3>'+
+      (s.grades.length?'<table><tr><th>Дата</th><th>Курс</th><th>Работа</th><th>Оценка</th></tr>'+s.grades.map(function(g){return '<tr><td>'+esc(g.date)+'</td><td>'+esc((C.courses.find(function(c){return c.id===g.courseId})||{}).name||'')+'</td><td>'+esc(g.label)+'</td><td><b>'+esc(g.value)+'</b></td></tr>'}).join('')+'</table>':'<p class="mut">Оценок нет</p>')+'</div>';
+  }).join('');
+}
+function addGrade(){
+  const s=ST.find(function(x){return x.code===document.getElementById('g-s').value});if(!s)return;
+  const g={courseId:document.getElementById('g-c').value,label:document.getElementById('g-l').value.trim()||'Работа',value:document.getElementById('g-v').value,date:today()};
+  s.grades.push(g);saveAll();
+  notifyLocal('Новая оценка',s.name+': '+g.label+' — '+g.value);
+  renderTab();
+}
+function jAtt(){
+  return '<div class="card"><h3>Отметить посещаемость</h3>'+
+    '<label>Ученик</label><select id="a-s">'+ST.map(function(s){return '<option value="'+s.code+'">'+esc(s.name)+' ('+s.code+')</option>'}).join('')+'</select>'+
+    '<label>Дата</label><input type="date" id="a-d" value="'+today()+'">'+
+    '<label>Статус</label><select id="a-v"><option>был</option><option>опоздал</option><option>отсутствовал</option></select>'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="addAtt()">Отметить</button></div></div>'+
+  ST.map(function(s){
+    return '<div class="card"><h3>'+esc(s.name)+'</h3>'+(s.attendance.length?s.attendance.map(function(a){return '<span class="badge '+(a.status==='был'?'g':a.status==='опоздал'?'a':'r')+'">'+esc(a.date)+' — '+esc(a.status)+'</span>'}).join(''):'<p class="mut">Отметок нет</p>')+'</div>';
+  }).join('');
+}
+function addAtt(){
+  const s=ST.find(function(x){return x.code===document.getElementById('a-s').value});if(!s)return;
+  s.attendance.push({date:document.getElementById('a-d').value,status:document.getElementById('a-v').value});
+  s.attendance.sort(function(a,b){return b.date.localeCompare(a.date)});
+  saveAll();renderTab();
+}
+function jPay(){
+  return '<div class="card"><h3>Оплата</h3>'+
+    '<label>Ученик</label><select id="p-s">'+ST.map(function(s){return '<option value="'+s.code+'">'+esc(s.name)+' ('+s.code+')</option>'}).join('')+'</select>'+
+    '<label>Дата</label><input type="date" id="p-d" value="'+today()+'">'+
+    '<label>Сумма</label><input id="p-a" placeholder="4000">'+
+    '<label>Комментарий</label><input id="p-n" placeholder="Оплата за месяц">'+
+    '<label>Чек (фото/pdf)</label><input type="file" id="p-f" accept="image/*,application/pdf">'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="addPay()">Сохранить</button></div></div>'+
+  ST.map(function(s){
+    return '<div class="card"><h3>'+esc(s.name)+'</h3>'+(s.payments.length?s.payments.map(function(p){return '<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>'+esc(p.date)+' · '+esc(p.note||'')+'</span><b>'+esc(p.amount)+' ₽</b></div>'+(p.checkPath?'<p class="mut">чек: '+esc(p.checkName||'')+'</p>':'')}).join(''):'<p class="mut">Оплат нет</p>')+'</div>';
+  }).join('');
+}
+async function addPay(){
+  const s=ST.find(function(x){return x.code===document.getElementById('p-s').value});if(!s)return;
+  const f=document.getElementById('p-f').files[0];
+  const p={date:document.getElementById('p-d').value,amount:document.getElementById('p-a').value.trim(),note:document.getElementById('p-n').value.trim(),checkPath:'',checkName:''};
+  if(f){toast('Загружаю чек…');await ensureFolder(FOLDER+'/payments');p.checkName=f.name;p.checkPath=FOLDER+'/payments/'+Date.now()+'-'+f.name.replace(/[^\w.\-а-яА-ЯёЁ ]+/g,'_');await uploadFile(p.checkPath,f);}
+  s.payments.unshift(p);saveAll();renderTab();toast('Оплата сохранена');
+}
+
+/* ================= УЧИТЕЛЬ: ПУБЛИКАЦИЯ ================= */
+function tPublish(){
+  const link=pub.bundleUrl?location.origin+location.pathname+'?pub='+encodeURIComponent(pub.bundleUrl):'';
+  return '<div class="card"><h3>Ссылка-приглашение для учеников и родителей</h3>'+
+    '<p class="mut">При публикации создаётся общий пакет (курсы, уроки, тесты, расписание) и личные файлы по коду каждого ученика. Ученик вводит свой код и видит только свои оценки, посещаемость и оплаты.</p>'+
+    '<div class="row" style="margin-top:10px"><button class="btn" onclick="doPublish()">'+(pub.bundleUrl?'Обновить публикацию':'Опубликовать')+'</button></div>'+
+    (link?'<label style="margin-top:12px">Ссылка (отправьте ученикам и родителям)</label><input readonly value="'+esc(link)+'" onclick="this.select()"><div class="row" style="margin-top:8px"><button class="btn sec" onclick="copyLink()">Скопировать</button></div>':'')+
+    '</div>';
+}
+async function doPublish(){
+  if(demo){toast('В демо-режиме публикация недоступна');return;}
+  try{
+    toast('Публикую…');
+    await ensureFolder(FOLDER+'/_public');
+    const stUrls={};
+    for(const s of ST){
+      const p=FOLDER+'/_public/student-'+s.code+'.json';
+      await writeJson(p,{code:s.code,name:s.name,courseIds:s.courseIds,grades:s.grades,attendance:s.attendance,payments:s.payments});
+      stUrls[s.code]=await publishPath(p);
+    }
+    const p=FOLDER+'/_public/bundle.json';
+    const bundle={settings:{centerName:C.settings.centerName,logo:C.settings.logo,formLink:C.settings.formLink},courses:C.courses,lessons:C.lessons,tests:C.tests,tasks:C.tasks,schedule:C.schedule,students:stUrls};
+    await writeJson(p,bundle);
+    pub={bundleUrl:await publishPath(p),updated:today()};
+    await writeJson(P_PUBLISH,pub);
+    renderTab();toast('Опубликовано!');
+  }catch(e){toast('Ошибка публикации: '+e.message)}
+}
+function copyLink(){const i=document.querySelector('#main input[readonly]');if(i){i.select();try{document.execCommand('copy')}catch(e){};toast('Скопировано')}}
+
+/* ================= УЧИТЕЛЬ: НАСТРОЙКИ ================= */
+function tSettings(){
+  const s=C.settings;
+  return '<div class="card"><h3>Настройки центра</h3>'+
+    '<label>Название учебного центра</label><input id="st-n" value="'+esc(s.centerName||'')+'">'+
+    '<label>Логотип (png/jpg до 500 КБ — заменит логотип «МИР»)</label><input type="file" id="st-logo" accept="image/*">'+
+    (s.logo?'<div style="margin-top:8px"><img class="logo-lg" src="'+esc(s.logo)+'"></div>':'')+
+    '<label>Ссылка Яндекс Формы для сдачи работ</label><input id="st-f" value="'+esc(s.formLink||'')+'" placeholder="https://forms.yandex.ru/...">'+
+    '<div class="row" style="margin-top:12px"><button class="btn" onclick="saveSettings()">Сохранить</button></div></div>'+
+  '<div class="card"><h3>Push-уведомления (серверная часть)</h3>'+
+    '<p class="mut">Для push в фоновом режиме нужен URL облачной функции и VAPID public key (инструкция — в README). Пока не заполнено — уведомления показываются при открытии приложения.</p>'+
+    '<label>URL функции</label><input id="st-fu" value="'+esc(s.functionUrl||'')+'" placeholder="https://functions.yandexcloud.net/...">'+
+    '<label>VAPID Public Key</label><input id="st-vp" value="'+esc(s.vapidPublic||'')+'">'+
+    '<div class="row" style="margin-top:12px"><button class="btn sec" onclick="saveSettings()">Сохранить и подключить</button></div></div>';
+}
+async function saveSettings(){
+  C.settings.centerName=document.getElementById('st-n').value.trim()||'МИР';
+  C.settings.formLink=document.getElementById('st-f').value.trim();
+  C.settings.functionUrl=document.getElementById('st-fu').value.trim();
+  C.settings.vapidPublic=document.getElementById('st-vp').value.trim();
+  const f=document.getElementById('st-logo').files[0];
+  if(f){
+    if(f.size>500000){toast('Логотип слишком большой (макс. 500 КБ)');return;}
+    C.settings.logo=await blobToDataUrl(f);
+  }
+  await saveAll();showChrome(true);renderTab();toast('Настройки сохранены');
+}
+function blobToDataUrl(f){return new Promise(function(res){const r=new FileReader();r.onload=function(){res(r.result)};r.readAsDataURL(f)})}
+
+/* ================= УЧЕНИК / РОДИТЕЛЬ ================= */
+async function loadStudent(pubUrl){
+  localStorage.setItem('mir_pub',pubUrl);
+  showChrome(false);
+  try{
+    const r=await fetch(pubUrl);
+    if(!r.ok)throw new Error('Не удалось загрузить материалы (HTTP '+r.status+')');
+    C=await r.json();C.students=C.students||{};meCache=null;
+    renderCodeEntry();
+  }catch(e){
+    document.getElementById('main').innerHTML='<div class="card"><h3>Не удалось открыть приглашение</h3><p class="mut">'+esc(e.message)+'</p><p class="mut">Попросите учителя обновить публикацию.</p><div class="row"><button class="btn sec" onclick="location.reload()">Обновить</button></div></div>';
+  }
+}
+function renderCodeEntry(){
+  const saved=localStorage.getItem('mir_code')||'';
+  document.getElementById('main').innerHTML='<div class="hero">'+
+    '<img src="'+esc(C.settings&&C.settings.logo||'logo.png')+'"><h1>'+esc(C.settings&&C.settings.centerName||'МИР')+'</h1>'+
+    '<p>Кабинет ученика и родителя</p>'+
+    '<input id="code-in" placeholder="Код ученика, напр. MK-7F3K" style="max-width:280px;margin:0 auto 10px" value="'+esc(saved)+'">'+
+    '<button class="btn primary" onclick="enterStudent(document.getElementById(\'code-in\').value.trim().toUpperCase())">Войти</button>'+
+    '<p class="mut" style="margin-top:14px"><a href="javascript:logout()" style="color:var(--teal)">Сменить приглашение</a></p>'+
+  '</div>';
+}
+async function enterStudent(code){
+  if(!code){toast('Введите код');return;}
+  if(!C.students[code]){toast('Код не найден. Проверьте написание');return;}
+  try{
+    const r=await fetch(C.students[code]);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    meCache=await r.json();meCache.code=code;
+    localStorage.setItem('mir_code',code);
+    role='student';showChrome(true);setTabs();sTab='lessons';renderTab();checkNewGrades();
+  }catch(e){toast('Ошибка загрузки: '+e.message)}
+}
+function sLessons(){
+  const cs=myCourses();
+  return cs.map(function(c){
+    const ls=C.lessons.filter(function(l){return l.courseId===c.id});
+    return '<div class="card"><h3>'+(c.logo?'<img src="'+esc(c.logo)+'" style="width:22px;height:22px;vertical-align:middle;border-radius:6px"> ':'')+esc(c.name)+'</h3>'+
+      (ls.length?ls.map(function(l){
+        return '<div style="border-top:1px solid var(--line);padding:12px 0">'+
+          '<b>'+esc(l.title)+'</b><p class="mut">'+esc(l.desc||'')+'</p>'+
+          (l.mediaPath&&l.mediaType&&l.mediaType.indexOf('video')===0?'<video controls controlsList="nodownload noplaybackrate" disablepictureinpicture playsinline oncontextmenu="return false" data-src="'+esc(l.mediaPath)+'"></video><p class="mut">Видео доступно только для просмотра в приложении</p>':'')+
+          (l.mediaPath&&(!l.mediaType||l.mediaType.indexOf('video')!==0)?'<button class="btn sec" onclick="viewFile(\''+esc(l.mediaPath)+'\')">Открыть материал</button>':'')+
+        '</div>';
+      }).join(''):'<p class="mut">Уроков пока нет</p>')+'</div>';
+  }).join('')||'<div class="card empty">Нет курсов</div>';
+}
+async function hydrateVideos(){
+  if(!token&&!demo)return;
+  for(const v of document.querySelectorAll('video[data-src]')){
+    try{
+      const path=v.getAttribute('data-src');
+      const j=await api('/resources/download?path='+encodeURIComponent(path));
+      const r=await fetch(j.href);
+      if(!r.ok)continue;
+      const blob=await r.blob();
+      v.src=URL.createObjectURL(blob);v.load();
+    }catch(e){}
+  }
+}
+async function viewFile(path){
+  try{
+    if(!token&&!demo){toast('Файл открывается только в приложении учителя');return;}
+    const j=await api('/resources/download?path='+encodeURIComponent(path));
+    const r=await fetch(j.href);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    if(blob.type.indexOf('image')===0) showModal('<img src="'+url+'" style="width:100%;border-radius:10px">');
+    else if(blob.type==='application/pdf') showModal('<iframe src="'+url+'" style="width:100%;height:70vh;border:0;border-radius:10px"></iframe>');
+    else showModal('<p class="mut">Этот тип файла открывается по ссылке из формы сдачи работ.</p>');
+  }catch(e){toast('Не удалось открыть файл')}
+}
+function showModal(inner){
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px';
+  d.innerHTML='<div class="card" style="max-width:700px;width:100%;max-height:85vh;overflow:auto;position:relative"><button class="btn warn" style="position:absolute;top:10px;right:10px" onclick="this.closest(\'[style]\').remove()">×</button>'+inner+'</div>';
+  d.addEventListener('click',function(e){if(e.target===d)d.remove()});
+  document.body.appendChild(d);
+}
+function sTests(){
+  const cs=myCourses();
+  return C.tests.filter(function(t){return cs.some(function(c){return c.id===t.courseId})}).map(function(t){
+    return '<div class="card"><h3>'+esc(t.title)+'</h3><span class="badge">'+esc((C.courses.find(function(c){return c.id===t.courseId})||{}).name||'')+'</span><button class="btn" style="margin-top:10px" onclick="startTest(\''+t.id+'\')">Пройти тест</button></div>';
+  }).join('')||'<div class="card empty">Тестов пока нет</div>';
+}
+function startTest(id){
+  const t=C.tests.find(function(x){return x.id===id});if(!t)return;
+  showModal('<h3>'+esc(t.title)+'</h3><div id="quiz">'+t.questions.map(function(q,i){
+    return '<div class="qz"><b>'+(i+1)+'. '+esc(q.q)+'</b>'+q.opts.map(function(o,j){return '<label style="margin:4px 0"><input type="radio" name="q'+i+'" value="'+j+'" style="width:auto;margin-right:8px">'+esc(o)+'</label>'}).join('')+'</div>';
+  }).join('')+'</div><button class="btn" onclick="submitTest(\''+id+'\')">Завершить тест</button>');
+}
+function submitTest(id){
+  const t=C.tests.find(function(x){return x.id===id});
+  let ok=0,ans=0;
+  t.questions.forEach(function(q,i){
+    const a=document.querySelector('input[name="q'+i+'"]:checked');
+    if(a){ans++;if(+a.value===q.c)ok++}
+  });
+  showModal('<h3>Результат: '+ok+' из '+t.questions.length+'</h3><p class="mut" style="margin:8px 0">Отвечено: '+ans+'. Оценку за тест учитель выставит в журнале.</p>');
+  localStorage.setItem('mir_test_'+id,ok+'/'+t.questions.length);
+}
+function sTasks(){
+  const cs=myCourses(),form=C.settings&&C.settings.formLink;
+  return C.tasks.filter(function(t){return cs.some(function(c){return c.id===t.courseId})}).map(function(t){
+    return '<div class="card"><h3>'+esc(t.title)+'</h3><span class="badge">'+esc((C.courses.find(function(c){return c.id===t.courseId})||{}).name||'')+'</span>'+
+      '<p class="mut" style="margin:8px 0">'+esc(t.desc||'')+'</p>'+
+      (t.filePath?'<button class="btn sec" onclick="viewFile(\''+esc(t.filePath)+'\')">Открыть задание</button>':'')+
+      (form?'<button class="btn" style="margin:8px 0 0 8px" onclick="window.open(\''+esc(form)+'\',\'_blank\')">Сдать решение (форма)</button>':'<p class="mut" style="margin-top:8px">Для сдачи решений учитель подключает Яндекс Форму в настройках.</p>')+
+    '</div>';
+  }).join('')||'<div class="card empty">Заданий пока нет</div>';
+}
+function sProgress(){
+  const me=meStudent();if(!me)return '';
+  return '<div class="card"><h3>Оценки</h3>'+(me.grades&&me.grades.length?'<table><tr><th>Дата</th><th>Курс</th><th>Работа</th><th>Оценка</th></tr>'+me.grades.map(function(g){return '<tr><td>'+esc(g.date)+'</td><td>'+esc((C.courses.find(function(c){return c.id===g.courseId})||{}).name||'')+'</td><td>'+esc(g.label)+'</td><td><b>'+esc(g.value)+'</b></td></tr>'}).join('')+'</table>':'<p class="empty">Оценок пока нет</p>')+'</div>';
+}
+function sSchedule(){
+  const cs=myCourses();
+  const items=C.schedule.filter(function(s){return cs.some(function(c){return c.id===s.courseId})}).sort(function(a,b){return (a.date+a.time).localeCompare(b.date+b.time)});
+  return items.length?items.map(function(s){
+    return '<div class="card"><div class="row" style="justify-content:space-between"><div><b>'+esc(s.date)+' '+esc(s.time||'')+'</b><p class="mut">'+esc((C.courses.find(function(c){return c.id===s.courseId})||{}).name||'')+'</p></div><span class="badge a">'+esc(s.topic||'')+'</span></div></div>';
+  }).join(''):'<div class="card empty">Расписание пока не задано</div>';
+}
+function sPayments(){
+  const me=meStudent();if(!me)return '';
+  return '<div class="card"><h3>Оплаты</h3>'+(me.payments&&me.payments.length?me.payments.map(function(p){return '<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><span>'+esc(p.date)+' · '+esc(p.note||'')+'</span><b>'+esc(p.amount)+' ₽</b></div>'}).join(''):'<p class="empty">Оплат нет</p>')+'</div>';
+}
+
+/* ================= PUSH (локальные уведомления об оценках) ================= */
+function checkNewGrades(){
+  const me=meStudent();if(!me||!me.grades)return;
+  const last=+localStorage.getItem('mir_gc_'+me.code)||0;
+  const now=me.grades.length;
+  if(now>last){
+    const g=me.grades[me.grades.length-1];
+    notifyLocal('Новая оценка',g.label+': '+g.value);
+    const b=document.getElementById('banner');
+    b.innerHTML='<div class="banner">Новая оценка: '+esc(g.label)+' — <b>'+esc(g.value)+'</b></div>';
+    b.querySelector('.banner').onclick=function(){b.innerHTML=''};
+    localStorage.setItem('mir_gc_'+me.code,now);
+  }
+}
+function notifyLocal(title,body){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='granted') new Notification(title,{body:body,icon:'icons/icon-192.png'});
+}
+function enableNotifications(){
+  if(!('Notification' in window)){toast('Уведомления не поддерживаются');return;}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){toast('Уведомления включены');notifyLocal('Уведомления включены','Вы будете видеть новые оценки при входе в приложение');}
+    else toast('Уведомления запрещены в настройках браузера');
+  });
+}
+function maybeNotifBanner(){
+  if(!('Notification' in window)||Notification.permission!=='default')return;
+  const b=document.getElementById('banner');
+  if(b.querySelector('.banner'))return;
+  b.innerHTML='<div class="banner">Хотите получать уведомления об оценках? <button class="btn" style="padding:7px 12px;margin-left:6px" onclick="enableNotifications()">Включить</button> <button class="btn sec" style="padding:7px 12px" onclick="document.getElementById(\'banner\').innerHTML=\'\'">Позже</button></div>';
+}
+
+/* защита контента: без контекстного меню и перетаскивания у ученика */
+document.addEventListener('contextmenu',function(e){if(role==='student'&&e.target.closest('video,iframe,img'))e.preventDefault()});
+document.addEventListener('dragstart',function(e){if(role==='student')e.preventDefault()});
+</script>
 </body>
 </html>
